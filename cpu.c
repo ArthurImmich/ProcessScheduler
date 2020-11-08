@@ -1,18 +1,32 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #define TAM 100
 
+typedef int cpu_interrupcao_t;
+
 typedef struct{
-    //pc = program counter, ir = intruction register
-    unsigned int _pc, _ir;
-    //cpu status 'normal', 'instrução ilegal', 'violação de memória',  _pm = program memory
-    char status[18], _pm[TAM][TAM];
+    //pc = program counter, acc = accumulator
+    unsigned int _pc;
+    int _acc;
+    //cpu status 0 =  'normal', 1 = 'instrução ilegal', 2 = 'violação de memória'
+    cpu_interrupcao_t status;
+}cpu_estado_t;
+
+typedef struct{
+    //_pm = program memory
+    char _pm[TAM][TAM];
     //_md = data memory
     int *_md;
-}cpu;
+}memory;
 
 typedef struct{
+    //estado
+    cpu_estado_t reg;
+    //memory
+    memory m;
+}cpu;
 
-}memory;
 
 /* instrução	argumentos	descrição
     CARGI	n	coloca o valor n no acumulador (A=n)
@@ -33,7 +47,7 @@ void cpu_retorna_interrupcao(cpu *c);
 char *cpu_instrucao(cpu *c);
 void cpu_salva_estado(cpu *c, cpu_estado_t *e);
 void cpu_altera_estado(cpu *c, cpu_estado_t *e);
-void cpu_estado_inicializa(cpu *c);
+void cpu_estado_inicializa(cpu_estado_t *e);
 void cpu_executa(cpu *c);
 
 int main(){
@@ -47,42 +61,118 @@ int main(){
     };
     int dados[4];
     cpu c;
-    cpu_estado_inicializa(&c);
-    cpu_altera_estado(&c);
+    cpu_estado_t e;
+    cpu_estado_inicializa(&e);
+    cpu_altera_estado(&c, &e);
     cpu_altera_programa(&c, (sizeof(programa)/sizeof(programa[0])), programa);
     cpu_altera_dados(&c, sizeof(dados)/sizeof(dados[0]), dados);
-    while (cpu_interrupcao(&c) == normal) {
+    while (cpu_interrupcao(&c) == 0) {
         cpu_executa(&c);
     }
     cpu_salva_dados(&c, sizeof(dados)/sizeof(dados[0]), dados); // se for o caso
-    printf("CPU parou na instrução %s (deve ser PARA)\n", cpu_instrucao(&c));
-    printf("O valor de m[0] é %d (deve ser 42)\n", dados[0]);
-}
-
-void cpu_estado_inicializa(cpu *c){
-    c->_pc = 0;
-    c->_ir = 0;
-    strcpy(c->status, "normal");
+    printf("CPU parou na instrucao %s (deve ser PARA)\n", cpu_instrucao(&c));
+    printf("O valor de m[0] e %i (deve ser 42)\n", dados[0]);
 }
 
 void cpu_altera_programa(cpu *c, int size, char *m[size]){
     for(int i = 0; i < size; i++){
-        c->_pm[i] = m[i];
+        strcpy(c->m._pm[i], m[i]);
     }
 }
 
 void cpu_altera_dados(cpu *c, int size, int *m){
+    c->m._md = malloc(sizeof(m));
     for(int i = 0; i < size; i++){
-        c->_md[i] = m[i];
+        c->m._md[i] = m[i];
     }
 }
 
 void cpu_salva_dados(cpu *c, int size, int *m){
     for(int i = 0; i < size; i++){
-        m[i] = c->_md[i];
+        m[i] = c->m._md[i];
     }
 }
 
-void cpu_altera_estado(cpu *c){
+cpu_interrupcao_t cpu_interrupcao(cpu *c){
+    return c->reg.status;
+}
 
+void cpu_retorna_interrupcao(cpu *c){
+    if (c->reg.status != 0){
+        c->reg.status = 0;
+        c->reg._pc++;
+    }
+}
+
+char *cpu_instrucao(cpu *c){
+    return c->m._pm[c->reg._pc];
+}
+
+void cpu_salva_estado(cpu *c, cpu_estado_t *e){
+    e->_pc = c->reg._pc;
+    e->_acc = c->reg._acc;
+    e->status = c->reg.status;
+}
+
+void cpu_altera_estado(cpu *c, cpu_estado_t *e){
+    c->reg._pc = e->_pc;
+    c->reg._acc = e->_acc;
+    c->reg.status = e->status;
+}
+
+void cpu_estado_inicializa(cpu_estado_t *e){
+    e->_pc = 0;
+    e->_acc = 0;
+    e->status = 0; 
+}
+
+void cpu_executa(cpu *c){
+//gets the first part of the isntruction;
+    char *instr = strtok(c->m._pm[c->reg._pc], " ");
+    if (strcmp(instr, "CARGI") == 0){
+        //gets the argument of the instruction;
+        instr = strtok(NULL, " ");
+        //atoi() transforms a string in a integer
+        c->reg._acc = atoi(instr);
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "CARGM") == 0){
+        instr = strtok(NULL, " ");
+        c->reg._acc = c->m._md[atoi(instr)];
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "CARGX") == 0){
+        instr = strtok(NULL, " ");
+        c->reg._acc = c->m._md[c->m._md[atoi(instr)]];
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "ARMM") == 0){
+        instr = strtok(NULL, " ");
+        c->m._md[atoi(instr)] = c->reg._acc;
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "ARMX") == 0){
+        instr = strtok(NULL, " ");
+        c->m._md[c->m._md[atoi(instr)]] = c->reg._acc;
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "SOMA") == 0){
+        instr = strtok(NULL, " ");
+        c->reg._acc += c->m._md[atoi(instr)];
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "NEG") == 0){
+        c->reg._acc = -c->reg._acc;
+        c->reg._pc++;
+    }
+    else if (strcmp(instr, "DESVZ") == 0){
+        if (c->reg._acc == 0){
+            instr = strtok(NULL, " ");
+            c->reg._pc = atoi(instr);
+        }
+        else{
+            c->reg._pc++;
+        }
+    }
+    else c->reg.status = 1;
 }
