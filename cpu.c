@@ -5,7 +5,7 @@ typedef struct{
     //pc = program counter, ir = intruction register
     unsigned int _pc, _ir;
     //cpu status 'normal', 'instrução ilegal', 'violação de memória',  _pm = program memory
-    char status[18], char _pm[TAM][TAM];
+    char status[18], _pm[TAM][TAM];
     //_md = data memory
     int *_md;
 }cpu;
@@ -54,7 +54,7 @@ int main(){
     while (cpu_interrupcao(&c) == normal) {
         cpu_executa(&c);
     }
-    // cpu_salva_dados(&c, 4, dados); // se for o caso
+    cpu_salva_dados(&c, sizeof(dados)/sizeof(dados[0]), dados); // se for o caso
     printf("CPU parou na instrução %s (deve ser PARA)\n", cpu_instrucao(&c));
     printf("O valor de m[0] é %d (deve ser 42)\n", dados[0]);
 }
@@ -67,18 +67,20 @@ void cpu_estado_inicializa(cpu *c){
 
 void cpu_altera_programa(cpu *c, int size, char *m[size]){
     for(int i = 0; i < size; i++){
-        c->_pm[0] = m[0];
+        c->_pm[i] = m[i];
     }
 }
 
-void cpu_altera_dados(cpu *c, int size, int m[size]){
+void cpu_altera_dados(cpu *c, int size, int *m){
     for(int i = 0; i < size; i++){
         c->_md[i] = m[i];
     }
 }
 
-void cpu_salva_dados(cpu *c, int size, int m[size]){
-
+void cpu_salva_dados(cpu *c, int size, int *m){
+    for(int i = 0; i < size; i++){
+        m[i] = c->_md[i];
+    }
 }
 
 void cpu_altera_estado(cpu *c){
