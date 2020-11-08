@@ -5,7 +5,7 @@ typedef struct{
     //pc = program counter, ir = intruction register
     unsigned int _pc, _ir;
     //cpu status 'normal', 'instrução ilegal', 'violação de memória',  _pm = program memory
-    char status[18], char _mp[TAM][TAM];
+    char status[18], char _pm[TAM][TAM];
     //_md = data memory
     int *_md;
 }cpu;
