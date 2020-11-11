@@ -140,10 +140,10 @@ int cpu_estado_acumulador(cpu_estado_t *e){
     return e->_acc;
 }
 
-
 void cpu_executa(cpu *c){
 //gets the first part of the isntruction;
     char *instr = strtok(c->m._pm[c->reg._pc], " ");
+    int aux;
     if (strcmp(instr, "CARGI") == 0){
         //gets the argument of the instruction;
         instr = strtok(NULL, " ");
@@ -153,28 +153,68 @@ void cpu_executa(cpu *c){
     }
     else if (strcmp(instr, "CARGM") == 0){
         instr = strtok(NULL, " ");
-        c->reg._acc = c->m._md[atoi(instr)];
-        c->reg._pc++;
+        aux = atoi(instr);
+        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        {
+            c->reg._acc = c->m._md[aux];
+            c->reg._pc++;
+        }
+        else
+        {
+            c->reg.status = 2ç
+        }
     }
     else if (strcmp(instr, "CARGX") == 0){
         instr = strtok(NULL, " ");
-        c->reg._acc = c->m._md[c->m._md[atoi(instr)]];
-        c->reg._pc++;
+        aux = atoi(instr);
+        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > c->m._md[aux] && c->m._md[aux] >= 0)
+        {
+            c->reg._acc = c->m._md[c->m._md[aux]];
+            c->reg._pc++;
+        }
+        else
+        {
+            c->reg.status = 2;
+        }
     }
     else if (strcmp(instr, "ARMM") == 0){
         instr = strtok(NULL, " ");
-        c->m._md[atoi(instr)] = c->reg._acc;
-        c->reg._pc++;
+        aux = atoi(instr);
+        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        {
+            c->m._md[aux] = c->reg._acc;
+            c->reg._pc++;
+        }
+        else
+        {
+            c->reg.status = 2;
+        }
     }
     else if (strcmp(instr, "ARMX") == 0){
         instr = strtok(NULL, " ");
-        c->m._md[c->m._md[atoi(instr)]] = c->reg._acc;
-        c->reg._pc++;
+        aux = atoi(instr);
+        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > c->m._md[aux] && c->m._md[aux] >= 0)
+        {
+            c->m._md[c->m._md[aux]] = c->reg._acc;
+            c->reg._pc++;
+        }
+        else
+        {
+            c->reg.status = 2;
+        }
     }
     else if (strcmp(instr, "SOMA") == 0){
         instr = strtok(NULL, " ");
-        c->reg._acc += c->m._md[atoi(instr)];
-        c->reg._pc++;
+        aux = atoi(instr);
+        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        {
+            c->reg._acc += c->m._md[aux];
+            c->reg._pc++;
+        }
+        else
+        {
+            c->reg.status = 2;
+        }
     }
     else if (strcmp(instr, "NEG") == 0){
         c->reg._acc = -c->reg._acc;
