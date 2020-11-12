@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+//CPU
 
 typedef int cpu_interrupcao_t;
 
@@ -26,20 +27,26 @@ typedef struct{
     memory m;
 }cpu;
 
-
-
 void cpu_altera_programa(cpu *c, int size, char *m[size]);
 void cpu_altera_dados(cpu *c, int size, int m[size]);
 void cpu_salva_dados(cpu *c, int size, int m[size]);
 cpu_interrupcao_t cpu_interrupcao(cpu *c);
 void cpu_retorna_interrupcao(cpu *c);
-char *cpu_instrucao(cpu *c);
+char *cpu_instrucao(cpu *c, int size);
 void cpu_salva_estado(cpu *c, cpu_estado_t *e);
 void cpu_altera_estado(cpu *c, cpu_estado_t *e);
 void cpu_estado_inicializa(cpu_estado_t *e);
-void cpu_executa(cpu *c);
+void cpu_executa(cpu *c, int size);
 void cpu_estado_altera_acumulador(cpu_estado_t *e, int novo_valor_do_acum);
 int cpu_estado_acumulador(cpu_estado_t *e);
+
+//controlador
+void controlador_inicia(cpu *c, cpu_estado_t *e, char **programa, int tam_programa, int *dados, int tam_dados);
+void controlador_executa(cpu *c, int size);
+
+//sistema operacional
+void sistema_operacional_inicia(cpu *c, cpu_estado_t *e, char **programa, int tam_programa, int *dados, int tam_dados);
+void sistema_operacional_executa();
 
 int main(){
     // um vetor de strings contendo um programa exemplo
@@ -57,37 +64,33 @@ int main(){
     cpu c;
     // um local para conter e inicializar o estado da CPU
     cpu_estado_t e;
-    // inicializa o estado da CPU
-    cpu_estado_inicializa(&e);
-    // inicializa a CPU, com o estado interno ...
-    cpu_altera_estado(&c, &e);
-    // ... a memória de programa ...
-    cpu_altera_programa(&c, sizeof(programa)/sizeof(programa[0]), programa);
-    // ... e a memória de dados
-    cpu_altera_dados(&c, sizeof(dados)/sizeof(dados[0]), dados);
-    // faz a CPU executar cada instrução do programa, 
-    // até que cause uma interrupção (que deve ser por instrução ilegal em PARA)
-    while (cpu_interrupcao(&c) == 0) {
-        cpu_executa(&c);
-    }
-    cpu_salva_dados(&c, sizeof(dados)/sizeof(dados[0]), dados); // se for o caso
-    printf("CPU parou na instrucao %s (deve ser PARA)\n", cpu_instrucao(&c));
-    printf("O valor de m[0] e %d (deve ser 42)\n", dados[0]);
+    int tam_programa = sizeof(programa)/sizeof(programa[0]);
+    int tam_dados = sizeof(dados)/sizeof(dados[0]);
+    controlador_inicia(&c, &e, programa, tam_programa, dados, tam_dados);
 }
 
+//========================================================//
+//-------------------------CPU----------------------------//
+//========================================================//
+
+
 void cpu_altera_programa(cpu *c, int size, char *m[size]){
-    c->m._pm = malloc(sizeof(m));
+    c->m._pm = malloc(size * sizeof(char *));
+    if(c->m._pm == NULL) return;
     for(int i = 0; i < size; i++){
-        c->m._pm[i] = malloc(sizeof(m[i]));
+        c->m._pm[i] = malloc((strlen(m[i]) + 1) * sizeof(char));
+        if(c->m._pm[i] == NULL) return;
         strcpy(c->m._pm[i], m[i]);
     }
 }
 
 void cpu_altera_dados(cpu *c, int size, int *m){
-    c->m._md = malloc(sizeof(m));
+    c->m._md = malloc(size * sizeof(int));
+    if(c->m._md == NULL) return;
     for(int i = 0; i < size; i++){
         c->m._md[i] = m[i];
     }
+
 }
 
 void cpu_salva_dados(cpu *c, int size, int *m){
@@ -107,8 +110,8 @@ void cpu_retorna_interrupcao(cpu *c){
     }
 }
 
-char *cpu_instrucao(cpu *c){
-    if(sizeof(c->m._pm)/sizeof(c->m._pm[0]) < c->reg._pc)
+char *cpu_instrucao(cpu *c, int size){
+    if(size > c->reg._pc)
         return c->m._pm[c->reg._pc];
     else
         return "invalida";
@@ -140,7 +143,7 @@ int cpu_estado_acumulador(cpu_estado_t *e){
     return e->_acc;
 }
 
-void cpu_executa(cpu *c){
+void cpu_executa(cpu *c, int size){
 //gets the first part of the isntruction;
     char *instr = strtok(c->m._pm[c->reg._pc], " ");
     int aux;
@@ -154,20 +157,20 @@ void cpu_executa(cpu *c){
     else if (strcmp(instr, "CARGM") == 0){
         instr = strtok(NULL, " ");
         aux = atoi(instr);
-        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        if (size > aux && aux >= 0)
         {
             c->reg._acc = c->m._md[aux];
             c->reg._pc++;
         }
         else
         {
-            c->reg.status = 2ç
+            c->reg.status = 2;
         }
     }
     else if (strcmp(instr, "CARGX") == 0){
         instr = strtok(NULL, " ");
         aux = atoi(instr);
-        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > c->m._md[aux] && c->m._md[aux] >= 0)
+        if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
             c->reg._acc = c->m._md[c->m._md[aux]];
             c->reg._pc++;
@@ -180,7 +183,7 @@ void cpu_executa(cpu *c){
     else if (strcmp(instr, "ARMM") == 0){
         instr = strtok(NULL, " ");
         aux = atoi(instr);
-        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        if (size > aux && aux >= 0)
         {
             c->m._md[aux] = c->reg._acc;
             c->reg._pc++;
@@ -193,7 +196,7 @@ void cpu_executa(cpu *c){
     else if (strcmp(instr, "ARMX") == 0){
         instr = strtok(NULL, " ");
         aux = atoi(instr);
-        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > c->m._md[aux] && c->m._md[aux] >= 0)
+        if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
             c->m._md[c->m._md[aux]] = c->reg._acc;
             c->reg._pc++;
@@ -206,7 +209,7 @@ void cpu_executa(cpu *c){
     else if (strcmp(instr, "SOMA") == 0){
         instr = strtok(NULL, " ");
         aux = atoi(instr);
-        if (sizeof(c->m._md)/sizeof(c->m._md[0]) > aux && aux >= 0)
+        if (size > aux && aux >= 0)
         {
             c->reg._acc += c->m._md[aux];
             c->reg._pc++;
@@ -229,23 +232,63 @@ void cpu_executa(cpu *c){
             c->reg._pc++;
         }
     }
-    else if (strcmp(instr, "PARA") == 0){
-        instr = strtok(NULL, " ");
-        exit(atoi(instr));
-    }
-    else if (strcmp(instr, "LE") == 0){
-        instr = strtok(NULL, " ");
-        cpu_estado_altera_acumulador(&c->reg, dispositivoes); //dispositivoes sera implementado na proxima parte
-        c->reg._pc++;
-    }
-    else if (strcmp(instr, "GRAVA") == 0){
-        instr = strtok(NULL, " ");
-        dispositivoes = cpu_estado_acumulador(&c->reg);
-        c->reg._pc++;
-    }
     else c->reg.status = 1;
 }
 
+//========================================================//
+//-------------------------S.O----------------------------//
+//========================================================//
+void sistema_operacional_inicia(cpu *c, cpu_estado_t *e, char **programa, int tam_programa, int *dados, int tam_dados){
+    // inicializa o estado da CPU
+    cpu_estado_inicializa(e);
+    // inicializa a CPU, com o estado interno ...
+    cpu_altera_estado(c, e);
+    // ... a memória de programa ...
+    cpu_altera_programa(c, tam_programa, programa);
+    // ... e a memória de dados
+    cpu_altera_dados(c, tam_dados, dados);
+    // faz a CPU executar cada instrução do programa, 
+    // até que cause uma interrupção (que deve ser por instrução ilegal em PARA)
+    controlador_executa(c, tam_dados);
+    cpu_salva_dados(c, tam_dados, dados); // se for o caso
+}
+
+void sistema_operacional_executa(cpu *c){
+    if(c->reg.status == 1){
+        char *instr = strtok(c->m._pm[c->reg._pc], " ");
+        int aux;
+        if (strcmp(instr, "PARA") == 0){
+            exit(EXIT_SUCCESS);
+        }
+        if (strcmp(instr, "LE") == 0){
+            instr = strtok(NULL, " ");
+            aux = atoi(instr);
+            cpu_estado_altera_acumulador(&c->reg, aux);
+            c->reg._pc++;
+        }
+        if (strcmp(instr, "GRAVA") == 0){
+            instr = strtok(NULL, " ");
+            aux = atoi(instr);
+            int dispositivoes = cpu_estado_acumulador(&c->reg); //por resolver na proxima aula
+            c->reg._pc++;
+        }
+    }
+    if(c->reg.status == 2) printf("Violação de memória");
+}
+
+//========================================================//
+//---------------------CONTROLADOR------------------------//
+//========================================================//
+void controlador_inicia(cpu *c, cpu_estado_t *e, char **programa, int tam_programa, int *dados, int tam_dados){
+    sistema_operacional_inicia(c, e, programa, tam_programa, dados, tam_dados);
+}
+
+void controlador_executa(cpu *c, int size){
+    while(1){
+        if(c->reg.status == 0) cpu_executa(c, size);
+        else sistema_operacional_executa(c);
+    }
+}
 /* instrução	argumentos	descrição
     CARGI	n	coloca o valor n no acumulador (A=n)
     CARGM	n	coloca no acumulador o valor na posição n da memória de dados (A=M[n])
