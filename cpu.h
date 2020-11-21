@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//CPU
-
 typedef int cpu_interrupcao_t;
 
 typedef struct{
