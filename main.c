@@ -15,6 +15,9 @@ int main(){
     "ARMM 0",
     "PARA"
     };
+    //Dispositivo de entrada
+    int entrada[] = {1, 2, 3, 4};
+    int saida[4];
     // um vetor de inteiros que será a memória de dados da CPU
     int dados[4];
     // a variável que representará a CPU
@@ -23,5 +26,5 @@ int main(){
     cpu_estado_t e;
     int tam_programa = sizeof(programa)/sizeof(programa[0]);
     int tam_dados = sizeof(dados)/sizeof(dados[0]);
-    controlador_inicia(&c, &e, programa, tam_programa, dados, tam_dados);
+    controlador_inicia(&c, &e, programa, tam_programa, dados, tam_dados, &entrada, &saida);
 }

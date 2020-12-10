@@ -4,7 +4,7 @@ typedef struct{
     //pc = program counter, acc = accumulator
     unsigned int _pc;
     int _acc;
-    //cpu status 0 =  'normal', 1 = 'instrução ilegal', 2 = 'violação de memória'
+    //cpu status 0 =  'normal', 1 = 'instrução ilegal', 2 = 'violação de memória', 3 = 'dormindo'
     cpu_interrupcao_t status;
 }cpu_estado_t;
 
@@ -22,19 +22,32 @@ typedef struct{
     memory m;
 }cpu;
 
+void cpu_dorme(cpu *c){
+    c->reg.status = 3;
+}
+
 void cpu_altera_programa(cpu *c, int size, char *m[size]){
     c->m._pm = malloc(size * sizeof(char *));
-    if(c->m._pm == NULL) return;
+    if(c->m._pm == NULL) {
+        printf("Falta de memória");
+        exit(1);
+    };
     for(int i = 0; i < size; i++){
-        c->m._pm[i] = malloc((strlen(m[i]) + 1) * sizeof(char));
-        if(c->m._pm[i] == NULL) return;
+        c->m._pm[i] = malloc((strlen(m[i]) + 1));
+        if(c->m._pm[i] == NULL) {
+            printf("Falta de memória");
+            exit(1);
+        };
         strcpy(c->m._pm[i], m[i]);
     }
 }
 
 void cpu_altera_dados(cpu *c, int size, int *m){
     c->m._md = malloc(size * sizeof(int));
-    if(c->m._md == NULL) return;
+    if(c->m._md == NULL) {
+        printf("Falta de memória");
+        exit(1);
+    };
     for(int i = 0; i < size; i++){
         c->m._md[i] = m[i];
     }
@@ -46,6 +59,7 @@ void cpu_salva_dados(cpu *c, int size, int *m){
         m[i] = c->m._md[i];
     }
 }
+
 
 cpu_interrupcao_t cpu_interrupcao(cpu *c){
     return c->reg.status;
@@ -92,7 +106,7 @@ int cpu_estado_acumulador(cpu_estado_t *e){
 }
 
 void cpu_executa(cpu *c, int size){
-//gets the first part of the isntruction;
+//gets the first part of the instruction;
     char *instr = strtok(c->m._pm[c->reg._pc], " ");
     int aux;
     if (strcmp(instr, "CARGI") == 0){
