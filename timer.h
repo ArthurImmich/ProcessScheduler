@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 typedef struct interr
 {
@@ -32,7 +29,7 @@ void timer_int_de(timer_t *timer, unsigned int time, char *tipo)
     if (!aux)
     {
         printf("Falta de memoria");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     aux->tipo = tipo;
     aux->time = timer->count + time;
@@ -75,11 +72,12 @@ char *timer_interrupcao(timer_t *timer)
 void timer_destroi(timer_t *timer)
 {
     interr_t *aux;
-    for (aux = timer->interr; !!timer->interr; aux = timer->interr)
+    for (aux = timer->interr; timer->interr; aux = timer->interr)
     {
         timer->interr = timer->interr->next;
         free(aux);
     }
+    timer->termina = true;
     timer->count = 0;
 }
 

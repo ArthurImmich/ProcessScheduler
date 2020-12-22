@@ -1,40 +1,54 @@
-typedef int cpu_interrupcao_t;
+enum estados_cpu
+{
+    NORMAL,
+    INSTRUCAOILEGAL,
+    VIOLACAODEMEMORIA,
+    DORMINDO
+};
 
-typedef struct{
+typedef struct
+{
     //pc = program counter, acc = accumulator
     unsigned int _pc;
     int _acc;
     //cpu status 0 =  'normal', 1 = 'instrução ilegal', 2 = 'violação de memória', 3 = 'dormindo'
-    cpu_interrupcao_t status;
-}cpu_estado_t;
+    enum estados_cpu status;
+} cpu_estado_t;
 
-typedef struct{
+typedef struct
+{
     //_pm = program memory
     char **_pm;
     //_md = data memory
     int *_md;
-}memory;
+} memory;
 
-typedef struct{
+typedef struct
+{
     //estado
     cpu_estado_t reg;
     //memória
     memory m;
-}cpu;
+} cpu;
 
-void cpu_dorme(cpu *c){
-    c->reg.status = 3;
+void cpu_dorme(cpu *c)
+{
+    c->reg.status = DORMINDO;
 }
 
-void cpu_altera_programa(cpu *c, int size, char *m[size]){
+void cpu_altera_programa(cpu *c, int size, char *m[size])
+{
     c->m._pm = malloc(size * sizeof(char *));
-    if(c->m._pm == NULL) {
+    if (c->m._pm == NULL)
+    {
         printf("Falta de memória");
         exit(1);
     };
-    for(int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++)
+    {
         c->m._pm[i] = malloc((strlen(m[i]) + 1));
-        if(c->m._pm[i] == NULL) {
+        if (c->m._pm[i] == NULL)
+        {
             printf("Falta de memória");
             exit(1);
         };
@@ -42,82 +56,103 @@ void cpu_altera_programa(cpu *c, int size, char *m[size]){
     }
 }
 
-void cpu_altera_dados(cpu *c, int size, int *m){
+void cpu_altera_dados(cpu *c, int size, int *m)
+{
     c->m._md = malloc(size * sizeof(int));
-    if(c->m._md == NULL) {
+    if (c->m._md == NULL)
+    {
         printf("Falta de memória");
         exit(1);
     };
-    for(int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++)
+    {
         c->m._md[i] = m[i];
     }
-
 }
 
-void cpu_salva_dados(cpu *c, int size, int *m){
-    for(int i = 0; i < size; i++){
+void cpu_salva_dados(cpu *c, int size, int *m)
+{
+    for (int i = 0; i < size; i++)
+    {
         m[i] = c->m._md[i];
     }
 }
 
-
-cpu_interrupcao_t cpu_interrupcao(cpu *c){
+enum estados_cpu cpu_interrupcao(cpu *c)
+{
     return c->reg.status;
 }
 
-void cpu_retorna_interrupcao(cpu *c){
-    if (c->reg.status != 0){
-        c->reg.status = 0;
-        c->reg._pc++;
+void cpu_retorna_interrupcao(cpu_estado_t *e)
+{
+    if (e->status != NORMAL)
+    {
+        e->status = NORMAL;
+        e->_pc++;
     }
 }
 
-char *cpu_instrucao(cpu *c, int size){
-    if(size > c->reg._pc)
+char *cpu_instrucao(cpu *c, int size)
+{
+    if (size > c->reg._pc)
         return c->m._pm[c->reg._pc];
     else
         return "invalida";
 }
 
-void cpu_salva_estado(cpu *c, cpu_estado_t *e){
+void cpu_salva_estado(cpu *c, cpu_estado_t *e)
+{
     e->_pc = c->reg._pc;
     e->_acc = c->reg._acc;
     e->status = c->reg.status;
 }
 
-void cpu_altera_estado(cpu *c, cpu_estado_t *e){
+void cpu_altera_estado(cpu *c, cpu_estado_t *e)
+{
     c->reg._pc = e->_pc;
     c->reg._acc = e->_acc;
     c->reg.status = e->status;
 }
 
-void cpu_estado_inicializa(cpu_estado_t *e){
+void cpu_estado_inicializa(cpu_estado_t *e)
+{
     e->_pc = 0;
     e->_acc = 0;
-    e->status = 0; 
+    e->status = NORMAL;
 }
 
-void cpu_estado_altera_acumulador(cpu_estado_t *e, int novo_valor_do_acum){
+void cpu_estado_altera_acumulador(cpu_estado_t *e, int novo_valor_do_acum)
+{
     e->_acc = novo_valor_do_acum;
 }
 
-int cpu_estado_acumulador(cpu_estado_t *e){
+int cpu_estado_acumulador(cpu_estado_t *e)
+{
     return e->_acc;
 }
 
-void cpu_executa(cpu *c, int size){
-//gets the first part of the instruction;
-    char *instr = strtok(c->m._pm[c->reg._pc], " ");
+void cpu_executa(cpu *c, int size)
+{
+    //gets the first part of the instruction;
+    char instraux[strlen(c->m._pm[c->reg._pc])+1];
+    strcpy(instraux, c->m._pm[c->reg._pc]);
+    char *instr = strtok(instraux, " ");
     int aux;
-    if (strcmp(instr, "CARGI") == 0){
+    if (strcmp(instr, "CARGI") == 0)
+    {
         //gets the argument of the instruction;
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         //atoi() transforms a string in a integer
         c->reg._acc = atoi(instr);
         c->reg._pc++;
     }
-    else if (strcmp(instr, "CARGM") == 0){
+    else if (strcmp(instr, "CARGM") == 0)
+    {
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -126,11 +161,14 @@ void cpu_executa(cpu *c, int size){
         }
         else
         {
-            c->reg.status = 2;
+            c->reg.status = VIOLACAODEMEMORIA;
         }
     }
-    else if (strcmp(instr, "CARGX") == 0){
+    else if (strcmp(instr, "CARGX") == 0)
+    {
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -139,11 +177,14 @@ void cpu_executa(cpu *c, int size){
         }
         else
         {
-            c->reg.status = 2;
+            c->reg.status = VIOLACAODEMEMORIA;
         }
     }
-    else if (strcmp(instr, "ARMM") == 0){
+    else if (strcmp(instr, "ARMM") == 0)
+    {
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -152,11 +193,14 @@ void cpu_executa(cpu *c, int size){
         }
         else
         {
-            c->reg.status = 2;
+            c->reg.status = VIOLACAODEMEMORIA;
         }
     }
-    else if (strcmp(instr, "ARMX") == 0){
+    else if (strcmp(instr, "ARMX") == 0)
+    {
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -165,11 +209,14 @@ void cpu_executa(cpu *c, int size){
         }
         else
         {
-            c->reg.status = 2;
+            c->reg.status = VIOLACAODEMEMORIA;
         }
     }
-    else if (strcmp(instr, "SOMA") == 0){
+    else if (strcmp(instr, "SOMA") == 0)
+    {
+        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
+        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -178,23 +225,31 @@ void cpu_executa(cpu *c, int size){
         }
         else
         {
-            c->reg.status = 2;
+            c->reg.status = VIOLACAODEMEMORIA;
         }
     }
-    else if (strcmp(instr, "NEG") == 0){
+    else if (strcmp(instr, "NEG") == 0)
+    {
+        printf("\nIntr: %s", instr);
         c->reg._acc = -c->reg._acc;
         c->reg._pc++;
     }
-    else if (strcmp(instr, "DESVZ") == 0){
-        if (c->reg._acc == 0){
+    else if (strcmp(instr, "DESVZ") == 0)
+    {
+        printf("\nIntr: %s", instr);
+        if (c->reg._acc == 0)
+        {
             instr = strtok(NULL, " ");
+            printf(" %s", instr);
             c->reg._pc = atoi(instr);
         }
-        else{
+        else
+        {
             c->reg._pc++;
         }
     }
-    else c->reg.status = 1;
+    else
+        c->reg.status = INSTRUCAOILEGAL;
 }
 
 // instrução	argumentos	descrição
@@ -206,7 +261,7 @@ void cpu_executa(cpu *c, int size){
 // SOMA	n	soma ao acumulador o valor no endereço n da memória de dados (A=A+M[n])
 // NEG		inverte o sinal do acumulador (A=-A)
 // DESVZ	n	se A vale 0, coloca o valor n no PC
-// outra		coloca a CPU em interrupção – instrução ilegal 
+// outra		coloca a CPU em interrupção – instrução ilegal
 // PARA	n	pede ao SO para terminar a execução do programa (como exit)
 // LE	n	pede ao SO para fazer a leitura de um dado (inteiro) do dispositivo de E/S n; o dado será colocado no acumulador
 // GRAVA	n	pede ao SO gravar o valor do acumulador no dispositivo de E/S n

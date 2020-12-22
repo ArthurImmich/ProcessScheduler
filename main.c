@@ -2,29 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cpu.h"
-#include "so.h"
 #include "controlador.h"
 
-int main(){
+
+int main(int argc, char *argv[])
+{
     // um vetor de strings contendo um programa exemplo
-    char *programa[] = {
-    "CARGI 10",
-    "ARMM 2",
-    "CARGI 32",
-    "SOMA 2",
-    "ARMM 0",
-    "PARA"
-    };
-    //Dispositivo de entrada
-    int entrada[] = {1, 2, 3, 4};
-    int saida[4];
-    // um vetor de inteiros que será a memória de dados da CPU
-    int dados[4];
+    if (argc < 1)
+    {
+        printf("Usage: ./main programa1.txt programa2.txt ...");
+        return 1;
+    }
+    FILE *file = fopen(argv[1], "r");
+    if (!file)
+    {
+        printf("Couldn't open txt file");
+    }
+
+    t_jobs job; //sistema operacional
     // a variável que representará a CPU
     cpu c;
-    // um local para conter e inicializar o estado da CPU
-    cpu_estado_t e;
-    int tam_programa = sizeof(programa)/sizeof(programa[0]);
-    int tam_dados = sizeof(dados)/sizeof(dados[0]);
-    controlador_inicia(&c, &e, programa, tam_programa, dados, tam_dados, &entrada, &saida);
+    int entrada[4][2] = {{1, 3}, {1, 1}, {1, 1}, {1, 4}};
+    int saida[4][2] = {{1}, {1}, {1}, {1}};
+    argc--;
+    controlador_inicia(&c, argv, &argc, entrada, saida);
+    printf("\nEntrada 0: %i", entrada[0][1]);
+    printf("\nSaida 1: %i", entrada[1][1]);
 }
