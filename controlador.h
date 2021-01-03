@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "so.h"
 #include <stdbool.h>
+#define TAM 5
 
 t_processo *escalonador(t_processo **tabela_processos, bool *stop)
 {
@@ -37,21 +38,22 @@ void checa_interrupcao(t_processo **tabela_processos, char *interr)
     }
 }
 
-void controlador_inicia(cpu *c, char **argv, int *argc, int entrada[][2], int saida[][2])
+void controlador_inicia(cpu *c, char **argv, int *argc, int entrada[][TAM], int saida[][TAM])
 {
     sistema_operacional_inicia(c, argv, argc, entrada, saida);
 }
 
-void controlador_executa(cpu *c, t_processo **tabela_processos, timer_t *timer, int entrada[][2], int saida[][2])
+void controlador_executa(cpu *c, t_processo **tabela_processos, timer_t *timer, int entrada[][TAM], int saida[][TAM])
 {
     t_processo *aux = NULL;
-    bool stop = false; 
+    unsigned int cpu_ociosa = 0;
+    bool stop = false;
+    char *interr;
     while (stop == false)
     {
         //Informa se ainda há processos para rodar
         //Se um processo estiver pronto, check_process deixará aux parado nesse processo
         aux = escalonador(tabela_processos, &stop);
-        printf("\nexecutando processo: %s", aux->nome);
         if (aux->estado_job == PRONTO)
         {   
             cpu_altera_estado(c, &aux->estado_cpu);
@@ -67,16 +69,26 @@ void controlador_executa(cpu *c, t_processo **tabela_processos, timer_t *timer, 
                 {
                     sistema_operacional_executa(c, timer, aux, entrada, saida);
                 }
+                //checa por interrupções
+                interr = timer_interrupcao(timer);
+                if (strcmp(interr, "nenhum") != 0)
+                {
+                    checa_interrupcao(tabela_processos, interr);
+                }
+                aux->cpu_time++;
+                printf("\nTempo do processo %s : %i", aux->nome, aux->cpu_time);
+                //printf("\nAcc: %i", c->reg._acc);
+                timer_tictac(timer);
             }
             cpu_salva_dados(c, aux->job.tam_memoria, aux->dados);
         }
-        char *interr = timer_interrupcao(timer);
+        interr = timer_interrupcao(timer);
         if (strcmp(interr, "nenhum") != 0)
         {
-            printf("\ninterrupcao");
             checa_interrupcao(tabela_processos, interr);
         }
-        printf("\ntimer: %i", timer_agora(timer));
+        cpu_ociosa++;
         timer_tictac(timer);
     }
+    printf("\nTempo de cpu ociosa: %i", cpu_ociosa);
 }

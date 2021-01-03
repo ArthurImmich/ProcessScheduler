@@ -1,4 +1,5 @@
 #include "jobs.h"
+#define TAM 5
 
 enum estados
 {
@@ -10,13 +11,15 @@ enum estados
 typedef struct processo
 {
     cpu_estado_t estado_cpu;
+    int posicao_entrada[TAM];
+    int posicao_saida[TAM];
     char *nome;
     memory memoria;
     enum estados estado_job;
     t_jobs job;
     int *dados;
+    unsigned int cpu_time;
     struct processo *next;
-
 } t_processo;
 
 void novo_processo(t_processo **tabela_processos, FILE *file, timer_t *timer, char *nome)
@@ -45,6 +48,12 @@ void novo_processo(t_processo **tabela_processos, FILE *file, timer_t *timer, ch
     }
     cpu_estado_inicializa(&aux->estado_cpu);
     aux->nome = nome;
+    for (int i = 0; i < TAM; i++)
+    {
+        aux->posicao_entrada[i] = 1;
+        aux->posicao_saida[i] = 1;
+    }
+    aux->cpu_time = 0;
     aux->next = *tabela_processos;
     *tabela_processos = aux;
 }
@@ -61,10 +70,10 @@ void cria_tabela_processos(int *argc, char **argv, t_processo **tabela_processos
     }
 }
 
-void controlador_executa(cpu *c, t_processo **tabela_processos, timer_t *timer, int entrada[][2], int saida[][2]);
+void controlador_executa(cpu *c, t_processo **tabela_processos, timer_t *timer, int entrada[][TAM], int saida[][TAM]);
 
 
-void sistema_operacional_inicia(cpu *c, char **argv, int *argc, int entrada[][2], int saida[][2])
+void sistema_operacional_inicia(cpu *c, char **argv, int *argc, int entrada[][TAM], int saida[][TAM])
 {
     timer_t timer;
     timer_inicializa(&timer);
@@ -73,7 +82,7 @@ void sistema_operacional_inicia(cpu *c, char **argv, int *argc, int entrada[][2]
     controlador_executa(c, &tabela_processos, &timer, entrada, saida);
 }
 
-void sistema_operacional_executa(cpu *c, timer_t *timer, t_processo *aux, int entrada[][2], int saida[][2])
+void sistema_operacional_executa(cpu *c, timer_t *timer, t_processo *aux, int entrada[][TAM], int saida[][TAM])
 {
     if (c->reg.status == INSTRUCAOILEGAL)
     {
@@ -97,7 +106,8 @@ void sistema_operacional_executa(cpu *c, timer_t *timer, t_processo *aux, int en
             aux->estado_job = BLOQUEADO;
             //Executa o que é pra executar
             cpu_salva_estado(c, &aux->estado_cpu);
-            cpu_estado_altera_acumulador(&aux->estado_cpu, entrada[intaux][1]);
+            cpu_estado_altera_acumulador(&aux->estado_cpu, entrada[intaux][aux->posicao_entrada[intaux]]);
+            aux->posicao_entrada[intaux]++;
             cpu_altera_estado(c, &aux->estado_cpu);
         }
         else if (strcmp(instr, "GRAVA") == 0)
@@ -111,7 +121,8 @@ void sistema_operacional_executa(cpu *c, timer_t *timer, t_processo *aux, int en
             aux->estado_job = BLOQUEADO;
             //Executa o que é pra executar
             cpu_salva_estado(c, &aux->estado_cpu);
-            saida[intaux][1] = cpu_estado_acumulador(&aux->estado_cpu);
+            saida[intaux][aux->posicao_saida[intaux]] = cpu_estado_acumulador(&aux->estado_cpu);
+            aux->posicao_saida[intaux]++;
             cpu_altera_estado(c, &aux->estado_cpu);
         }
         else

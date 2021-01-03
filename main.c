@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cpu.h"
 #include "controlador.h"
+#define TAM 5
 
 
 int main(int argc, char *argv[])
@@ -22,10 +23,22 @@ int main(int argc, char *argv[])
     t_jobs job; //sistema operacional
     // a variável que representará a CPU
     cpu c;
-    int entrada[4][2] = {{1, 3}, {1, 1}, {1, 1}, {1, 4}};
-    int saida[4][2] = {{1}, {1}, {1}, {1}};
+    //array de entrada
+    //as linhas correspondem ao dispositivo de e/s (nesse casao são 4)
+    //o primeiro número do array coresponde ao tempo de acesso ao dispositiov.
+    int entrada[2][TAM] = {{3, 5, 2, 1, 4}, {4, 3, 5, 1, -4}};
+    //array de saida
+    //as linhas correspondem ao dispositivo de e/s (nesse casao são 4)
+    //o primeiro número do array coresponde ao tempo de acesso ao dispositivo.
+    int saida[3][TAM] = {{5}, {2}, {3}};
     argc--;
+    //inicia o programa
     controlador_inicia(&c, argv, &argc, entrada, saida);
-    printf("\nEntrada 0: %i", entrada[0][1]);
-    printf("\nSaida 1: %i", entrada[1][1]);
+    //resultados
+    printf("\nSaida 1 (resultado programa 1): %i", saida[1][1]);
+    for (int i = 1; i < TAM; i++)
+    {
+        printf("\nSaida 2: (resultado programa 2): %i", saida[2][i]);
+    }
+    
 }
