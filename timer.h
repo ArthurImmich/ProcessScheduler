@@ -63,10 +63,7 @@ char *timer_interrupcao(timer_t *timer)
     {
         if (timer->count == aux->time)
         {
-<<<<<<< HEAD
             aux->time = -1; //'esquece' a interrupcao
-=======
->>>>>>> origin/main
             return aux->tipo;
         }
     }
@@ -88,8 +85,4 @@ void timer_destroi(timer_t *timer)
 unsigned int timer_agora(timer_t *timer)
 {
     return timer->count;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
