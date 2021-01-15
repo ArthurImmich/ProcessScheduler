@@ -3,8 +3,11 @@
 #include <string.h>
 #include "cpu.h"
 #include "controlador.h"
+<<<<<<< HEAD
+=======
 #define TAM 5
 
+>>>>>>> origin/main
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +17,14 @@ int main(int argc, char *argv[])
         printf("Usage: ./main programa1.txt programa2.txt ...");
         return 1;
     }
+<<<<<<< HEAD
+
+    t_jobs job;
+    cpu c;
+    argc--;
+    controlador_inicia(&c, argv, &argc);
+}
+=======
     FILE *file = fopen(argv[1], "r");
     if (!file)
     {
@@ -42,3 +53,4 @@ int main(int argc, char *argv[])
     }
     
 }
+>>>>>>> origin/main

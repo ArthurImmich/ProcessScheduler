@@ -1,3 +1,31 @@
+<<<<<<< HEAD
+3
+1
+2
+5
+3
+5
+2
+1
+4
+5
+4
+3
+5
+1
+-4
+3
+2
+3
+2
+2
+5
+2
+LE 0
+ARMM 0
+LE 1
+SOMA 0
+=======
 4
 4
 0
@@ -6,6 +34,7 @@ LE    0
 ARMM  0
 LE    1
 SOMA  0
+>>>>>>> origin/main
 GRAVA 2
 DESVZ 8
 CARGI 0
