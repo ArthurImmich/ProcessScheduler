@@ -88,10 +88,6 @@ void cpu_retorna_interrupcao(cpu_estado_t *e)
     if (e->status != NORMAL)
     {
         e->status = NORMAL;
-<<<<<<< HEAD
-=======
-        e->_pc++;
->>>>>>> origin/main
     }
 }
 
@@ -137,37 +133,21 @@ int cpu_estado_acumulador(cpu_estado_t *e)
 void cpu_executa(cpu *c, int size)
 {
     //gets the first part of the instruction;
-<<<<<<< HEAD
     char instraux[strlen(c->m._pm[c->reg._pc]) + 1];
-=======
-    char instraux[strlen(c->m._pm[c->reg._pc])+1];
->>>>>>> origin/main
     strcpy(instraux, c->m._pm[c->reg._pc]);
     char *instr = strtok(instraux, " ");
     int aux;
     if (strcmp(instr, "CARGI") == 0)
     {
         //gets the argument of the instruction;
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         //atoi() transforms a string in a integer
         c->reg._acc = atoi(instr);
         c->reg._pc++;
     }
     else if (strcmp(instr, "CARGM") == 0)
     {
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -181,13 +161,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "CARGX") == 0)
     {
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -201,13 +175,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "ARMM") == 0)
     {
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -221,13 +189,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "ARMX") == 0)
     {
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -241,13 +203,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "SOMA") == 0)
     {
-<<<<<<< HEAD
         instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        instr = strtok(NULL, " ");
-        printf(" %s", instr);
->>>>>>> origin/main
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -261,26 +217,14 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "NEG") == 0)
     {
-<<<<<<< HEAD
-=======
-        printf("\nIntr: %s", instr);
->>>>>>> origin/main
         c->reg._acc = -c->reg._acc;
         c->reg._pc++;
     }
     else if (strcmp(instr, "DESVZ") == 0)
     {
-<<<<<<< HEAD
         if (c->reg._acc == 0)
         {
             instr = strtok(NULL, " ");
-=======
-        printf("\nIntr: %s", instr);
-        if (c->reg._acc == 0)
-        {
-            instr = strtok(NULL, " ");
-            printf(" %s", instr);
->>>>>>> origin/main
             c->reg._pc = atoi(instr);
         }
         else
@@ -291,20 +235,3 @@ void cpu_executa(cpu *c, int size)
     else
         c->reg.status = INSTRUCAOILEGAL;
 }
-<<<<<<< HEAD
-=======
-
-// instrução	argumentos	descrição
-// CARGI	n	coloca o valor n no acumulador (A=n)
-// CARGM	n	coloca no acumulador o valor na posição n da memória de dados (A=M[n])
-// CARGX	n	coloca no acumulador o valor na posição que está na posição n da memória de dados (A=M[M[n]])
-// ARMM	n	coloca o valor do acumulador na posição n da memória de dados (M[n]=A)
-// ARMX	n	coloca o valor do acumulador posição que está na posição n da memória de dados (M[M[n]]=A)
-// SOMA	n	soma ao acumulador o valor no endereço n da memória de dados (A=A+M[n])
-// NEG		inverte o sinal do acumulador (A=-A)
-// DESVZ	n	se A vale 0, coloca o valor n no PC
-// outra		coloca a CPU em interrupção – instrução ilegal
-// PARA	n	pede ao SO para terminar a execução do programa (como exit)
-// LE	n	pede ao SO para fazer a leitura de um dado (inteiro) do dispositivo de E/S n; o dado será colocado no acumulador
-// GRAVA	n	pede ao SO gravar o valor do acumulador no dispositivo de E/S n
->>>>>>> origin/main
