@@ -235,17 +235,3 @@ void cpu_executa(cpu *c, int size)
     else
         c->reg.status = INSTRUCAOILEGAL;
 }
-
-// instrução	argumentos	descrição
-// CARGI	n	coloca o valor n no acumulador (A=n)
-// CARGM	n	coloca no acumulador o valor na posição n da memória de dados (A=M[n])
-// CARGX	n	coloca no acumulador o valor na posição que está na posição n da memória de dados (A=M[M[n]])
-// ARMM	n	coloca o valor do acumulador na posição n da memória de dados (M[n]=A)
-// ARMX	n	coloca o valor do acumulador posição que está na posição n da memória de dados (M[M[n]]=A)
-// SOMA	n	soma ao acumulador o valor no endereço n da memória de dados (A=A+M[n])
-// NEG		inverte o sinal do acumulador (A=-A)
-// DESVZ	n	se A vale 0, coloca o valor n no PC
-// outra		coloca a CPU em interrupção – instrução ilegal
-// PARA	n	pede ao SO para terminar a execução do programa (como exit)
-// LE	n	pede ao SO para fazer a leitura de um dado (inteiro) do dispositivo de E/S n; o dado será colocado no acumulador
-// GRAVA	n	pede ao SO gravar o valor do acumulador no dispositivo de E/S n
