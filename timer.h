@@ -63,6 +63,7 @@ char *timer_interrupcao(timer_t *timer)
     {
         if (timer->count == aux->time)
         {
+            aux->time = -1; //'esquece' a interrupcao
             return aux->tipo;
         }
     }

@@ -88,7 +88,6 @@ void cpu_retorna_interrupcao(cpu_estado_t *e)
     if (e->status != NORMAL)
     {
         e->status = NORMAL;
-        e->_pc++;
     }
 }
 
@@ -134,25 +133,21 @@ int cpu_estado_acumulador(cpu_estado_t *e)
 void cpu_executa(cpu *c, int size)
 {
     //gets the first part of the instruction;
-    char instraux[strlen(c->m._pm[c->reg._pc])+1];
+    char instraux[strlen(c->m._pm[c->reg._pc]) + 1];
     strcpy(instraux, c->m._pm[c->reg._pc]);
     char *instr = strtok(instraux, " ");
     int aux;
     if (strcmp(instr, "CARGI") == 0)
     {
         //gets the argument of the instruction;
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         //atoi() transforms a string in a integer
         c->reg._acc = atoi(instr);
         c->reg._pc++;
     }
     else if (strcmp(instr, "CARGM") == 0)
     {
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -166,9 +161,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "CARGX") == 0)
     {
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -182,9 +175,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "ARMM") == 0)
     {
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -198,9 +189,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "ARMX") == 0)
     {
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         aux = atoi(instr);
         if (size > c->m._md[aux] && c->m._md[aux] >= 0)
         {
@@ -214,9 +203,7 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "SOMA") == 0)
     {
-        printf("\nIntr: %s", instr);
         instr = strtok(NULL, " ");
-        printf(" %s", instr);
         aux = atoi(instr);
         if (size > aux && aux >= 0)
         {
@@ -230,17 +217,14 @@ void cpu_executa(cpu *c, int size)
     }
     else if (strcmp(instr, "NEG") == 0)
     {
-        printf("\nIntr: %s", instr);
         c->reg._acc = -c->reg._acc;
         c->reg._pc++;
     }
     else if (strcmp(instr, "DESVZ") == 0)
     {
-        printf("\nIntr: %s", instr);
         if (c->reg._acc == 0)
         {
             instr = strtok(NULL, " ");
-            printf(" %s", instr);
             c->reg._pc = atoi(instr);
         }
         else
