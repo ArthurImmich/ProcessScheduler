@@ -8,6 +8,7 @@ typedef struct
     int data;
     int tam_memoria;
     int tam_programa;
+<<<<<<< HEAD
     int **entrada;
     int **saida;
     int *posicao_entrada;
@@ -17,6 +18,13 @@ typedef struct
 } t_jobs;
 
 int count_program_lines(FILE *file)
+=======
+    int entrada;
+    int saida;
+} t_jobs;
+
+int count_progam_lines(FILE *file)
+>>>>>>> origin/main
 {
     char c;
     int countword = 0;
@@ -27,19 +35,38 @@ int count_program_lines(FILE *file)
             countword++;
         }
     }
+<<<<<<< HEAD
     countword++;
+=======
+    countword -= 3;
+    rewind(file);
+>>>>>>> origin/main
     return countword;
 }
 
 t_jobs create_job(FILE *file)
 {
     t_jobs job;
+<<<<<<< HEAD
     int num;
     int tam_entrada;
     int tam_saida;
     int flag = 0;
 
     while (flag < 2)
+=======
+    job.tam_programa = count_progam_lines(file);
+    job.programa = malloc(job.tam_programa * sizeof(char *));
+    if (!job.programa)
+    {
+        printf("not enough memory!");
+        exit(EXIT_FAILURE);
+    }
+
+    int num;
+    int flag = 0;
+    while (flag < 4)
+>>>>>>> origin/main
     {
         fscanf(file, "%i\n", &num);
         if (flag == 0)
@@ -50,6 +77,7 @@ t_jobs create_job(FILE *file)
         {
             job.tam_memoria = num;
         }
+<<<<<<< HEAD
         flag++;
     }
 
@@ -88,6 +116,20 @@ t_jobs create_job(FILE *file)
     }
     fseek(file, ptr, SEEK_SET);
     char c;
+=======
+        if (flag == 2)
+        {
+            job.entrada = num;
+        }
+        if (flag == 3)
+        {
+            job.saida = num;
+        }
+        flag++;
+    }
+    char c;
+    int ptr = ftell(file);
+>>>>>>> origin/main
     int i = 0;
     int word_size = 0;
     while ((c = fgetc(file)) != EOF)
@@ -122,6 +164,11 @@ t_jobs create_job(FILE *file)
         }
     }
     job.programa[i][j] = '\0';
+<<<<<<< HEAD
 
     return job;
 }
+=======
+    return job;
+}
+>>>>>>> origin/main

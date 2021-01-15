@@ -4,6 +4,7 @@ operating systems class activity
 Um programa deve possuir o seguinte formato:
 1 linha = data de lançamento
 2 linha = tamanho da memória de dados necessária
+<<<<<<< HEAD
 3 linha = quantos dispositivos de entrada
 4 linha = informa o tamanho do primeiro dispositivo de entrada // lembrando que o tamanho mínimo é dois pois o primeiro valor
 5 linha = informa o tempo de aceso ao dispositivo de entrada 
@@ -45,4 +46,19 @@ CARGI 0
 DESVZ 7
 CARGM 0
 GRAVA 1
+=======
+3 linha = dispositivo de entrada
+4 linha = dispositivo de saida
+O resto é o programa;
+
+4
+4
+0
+1
+CARGI 10
+ARMM 2
+CARGI 32
+SOMA 2
+ARMM 0
+>>>>>>> origin/main
 PARA
