@@ -1,7 +1,7 @@
 #include "timer.h"
 #include "so.h"
 #include <stdbool.h>
-#define TAM_QUANTUM 5
+#define TAM_QUANTUM 4
 
 t_processo *escalonador(t_processo *tabela_processos, bool *stop)
 {
@@ -36,7 +36,7 @@ void checa_interrupcao(t_processo *tabela_processos, char *interr)
     }
 }
 
-void ImprimeTabela(t_processo *tabela_processos)
+void ImprimeTabela(t_processo *tabela_processos, int tempo_total_cpu)
 {
     t_processo *aux;
     for (aux = tabela_processos; aux != NULL; aux = aux->next)
@@ -47,7 +47,9 @@ void ImprimeTabela(t_processo *tabela_processos)
         printf("\nHora de termino: %i", aux->fim);
         printf("\nVezes que foi bloqueado: %i", aux->vezes_bloqueado);
         printf("\nTempo bloqueado: %i", aux->tempo_bloqueado);
+        printf("\nQuantia de preempcao: %i", aux->preempcao);
         printf("\nTempo de retorno: %i", aux->fim - aux->job.data);
+        printf("\nPercentual de tempo de cpu: %.2f", ((float) aux->cpu_time * 100 /(float)tempo_total_cpu));
         for (int i = 0; i < aux->job.qtd_saida; i++)
         {
             for (int j = 1; j < aux->job.posicao_saida[i]; j++)
@@ -95,6 +97,7 @@ void controlador_executa(cpu *c, t_processo *tabela_processos, timer_t *timer)
                 quantum--;
                 if (quantum <= 0)
                 {
+                    aux->preempcao++;
                     cpu_dorme(c);
                     timer_int_de(timer, 1, aux->nome);
                     aux->estado_job = BLOQUEADO;
@@ -139,5 +142,5 @@ void controlador_executa(cpu *c, t_processo *tabela_processos, timer_t *timer)
     atualiza_tempo_bloqueado(tabela_processos, timer_agora(timer));
     printf("\n\nTempo de cpu ociosa: %i", cpu_ociosa);
     printf("\nTempo de execucao total: %i", timer_agora(timer));
-    ImprimeTabela(tabela_processos);
+    ImprimeTabela(tabela_processos, timer_agora(timer));
 }

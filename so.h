@@ -21,6 +21,7 @@ typedef struct processo
     int *dados;
     unsigned int cpu_time;
     struct processo *next;
+    int preempcao;
 } t_processo;
 
 void novo_processo(t_processo **tabela_processos, FILE *file, timer_t *timer, char *nome)
@@ -64,6 +65,7 @@ void novo_processo(t_processo **tabela_processos, FILE *file, timer_t *timer, ch
     aux->tempo_bloqueado = 0;
     aux->vezes_bloqueado = 0;
     aux->prioridade = 0.5;
+    aux->preempcao = 0;
     aux->next = *tabela_processos;
     *tabela_processos = aux;
 }
