@@ -3,7 +3,7 @@ class Dados:
     data = []
 
     def __init__(self, size, page_size):
-        self.data.append(None for i in range(size))
+        self.data = [None for i in range(size)]
         self.mem_size = size
         self.page_size = page_size
         self.next_page_out = 0

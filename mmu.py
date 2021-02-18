@@ -1,14 +1,15 @@
 class Pagina:
-    validade = 'INVALIDO'
-    acessado = 'ACESSADO'
-    alterado = 'ALTERADO'
-    n_pagina = None
+    def __init__(self):
+        self.validade = 'INVALIDO'
+        self.acessado = 'ACESSADO'
+        self.alterado = 'ALTERADO'
+        self.n_pagina = None
 
 class Mmu:
 
-    tabela_pagina = []
 
     def __init__(self, tam_tabela, tam_pagina):
+        self.tabela_pagina = []
         self.tam_tabela = tam_tabela
         self.tam_pagina = tam_pagina
         for i in range(tam_tabela):
@@ -17,9 +18,9 @@ class Mmu:
     def mmuGetData(self, i, so, processo, c, timer, dados):
 
         #Pega o indice do descritor correspondete na tabela de pagina
-        descritor = i / self.tam_pagina
+        descritor = int(i / self.tam_pagina)
         #pega a posicao do dado na pagina
-        posicao = i % self.tam_pagina
+        posicao = int(i % self.tam_pagina)
 
         #Pagina invalida 
         if self.tabela_pagina[descritor].validade == 'INVALIDO':
@@ -42,9 +43,9 @@ class Mmu:
     def mmuSetData(self, i, dados, value, so, timer, processo, c):
 
         #Pega o indice do descritor correspondete na tabela de pagina
-        descritor = i / self.tam_pagina
+        descritor = int(i / self.tam_pagina)
         #pega a posicao do dado na pagina
-        posicao = i % self.tam_pagina
+        posicao = int(i % self.tam_pagina)
         
         #Pagina valida
         if self.tabela_pagina[descritor].validade == 'VALIDO':
