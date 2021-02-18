@@ -4,7 +4,7 @@ from sys import argv
 from dados import *
 from controlador import *
 from so import So
-from timer import *
+from timer import Timer
 
 def MEMORIA():
     return 16
@@ -17,9 +17,9 @@ if len(argv) <= 1:
     exit()
 
 c = Cpu()
-mmu = Mmu(MEMORIA()/PAGINA(), PAGINA())
+mmu = Mmu(int(MEMORIA()/PAGINA()), PAGINA())
 dados = Dados(MEMORIA(), PAGINA())
 controlador = Controlador()
 timer = Timer()
 so = So(timer, argv, dados, mmu)
-controlador.inicia(c, argv, dados, mmu, so)
+controlador.inicia(c, argv, dados, mmu, so, timer)
