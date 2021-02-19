@@ -81,7 +81,6 @@ class Cpu:
             argument = self._pm[self.reg._pc]['arg']
             if dados.mem_size > argument and argument >= 0:
                 mmu.mmuSetData(argument, dados, self.reg._acc, so, timer, processo, self)
-                print('AQUI')
                 self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'

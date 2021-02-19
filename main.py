@@ -7,10 +7,10 @@ from so import So
 from timer import Timer
 
 def MEMORIA():
-    return 51
+    return 65
 
 def PAGINA():
-    return 3
+    return 5
 
 argv.append('matrizcoluna.txt')
 argv.append('matrizlinha.txt')
@@ -19,6 +19,40 @@ argv.append('matrizlinha.txt')
 argv.append('matrizcoluna.txt')
 argv.append('matrizlinha.txt')
 argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+argv.append('matrizcoluna.txt')
+argv.append('matrizlinha.txt')
+
 if len(argv) <= 1:
     print("Usage: pyton main.py programa1.txt programa2.txt...")
     exit()
