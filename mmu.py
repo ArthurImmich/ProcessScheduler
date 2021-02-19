@@ -15,7 +15,7 @@ class Mmu:
             self.tabela_pagina.append(Pagina())
         
     def fifo(self):
-        return True
+        return False
     
     def mmuGetData(self, i, so, processo, c, timer, dados):
 

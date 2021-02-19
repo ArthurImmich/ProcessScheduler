@@ -39,19 +39,25 @@ class Controlador:
             print('Hora de inicio: ', processo.job.data)
             print('Hora de termino: ', processo.fim)
             print('Vezes que foi bloqueado: ', processo.vezes_bloqueado)
+            print((processo.fim - processo.job.data) - processo.cpu_time - processo.tempo_em_troca_pagina - processo.tempo_em_es)
             print('Tempo bloqueado por e/s: ', processo.tempo_em_es)
             print('Tempo bloqueado por troca de pagina: ', processo.tempo_em_troca_pagina)
             print('Quantia de preempcao: ', processo.preempcao)
-            print('Quantidade de memoria: ', len(processo.mem_secundaria.data) - processo.mem_secundaria.data.count(None))
             print('Tempo de retorno: ', processo.fim - processo.job.data)
             print('Falha de pagina: ', processo.falha_pagina)
             print('Vezes escalonado: ', processo.vezes_escalonado)
             print('Percentual de tempo de cpu: ', (processo.cpu_time * 100 / timer))
+            Qtd_memoria = 0
+            for pagina in processo.copia_mmu.tabela_pagina:
+                if pagina.n_pagina != None:
+                    Qtd_memoria += processo.copia_mmu.tam_pagina
+            print('Quantidade de memoria: ', Qtd_memoria)
             for i, saida in enumerate(processo.job.saida):
-                print('Saída: ', i)
-                for j, posicao in enumerate(saida):
-                    if j != 0:
-                        print('Posição[{}]: {}'.format(j, posicao))
+                if i == 1: #printa só a saida 1
+                    print('Saída: ', i)
+                    for j, posicao in enumerate(saida):
+                        if j != 0:
+                            print('Posição[{}]: {}'.format(j, posicao))
         print('Falhas totais de pagina: ', falhas_totais_pagina)
         print('Tempo total processos: ', tempo_todos_processos)
 
@@ -73,7 +79,6 @@ class Controlador:
                 c.altera_programa(so.tabela_processos[index].job.programa)
                 c.quantum = self.TAM_QUANTUM()
                 while so.tabela_processos[index].estado == 'PRONTO':
-                    print(so.tabela_processos[index].nome)
                     c.quantum -= 1
                     if c.quantum <= 0:
                         so.tabela_processos[index].preempcao += 1
@@ -94,7 +99,6 @@ class Controlador:
                             break
                     so.tabela_processos[index].cpu_time += 1
                     timer.timer_tictac()
-                print(dados.data)
                 so.tabela_processos[index].vezes_bloqueado += 1
                 c.salva_dados(dados, mmu, so.tabela_processos[index])
                 so.tabela_processos[index].cpu_estado = c.salva_estado()
