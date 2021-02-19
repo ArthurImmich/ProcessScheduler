@@ -1,3 +1,5 @@
+from copy import *
+
 class Cpu_estado:
     def __init__(self):
         self._pc = 0
@@ -19,8 +21,8 @@ class Cpu:
         self._pm = m
 
     def salva_dados(self, memoria, mmu, processo):
-        processo.copia_mmu.tabela_pagina = mmu.tabela_pagina
-        processo.mem_secundaria.data = memoria.data
+        processo.copia_mmu.tabela_pagina = deepcopy(mmu.tabela_pagina)
+        processo.mem_secundaria.data = deepcopy(memoria.data)
     
     def retorna_interrupcao(self, e):
         if e.status != 'NORMAL':
@@ -30,11 +32,10 @@ class Cpu:
         return self._pm[self.reg._pc] if len(self._pm) > self.reg._pc else "Invalida"
 
     def salva_estado(self):
-        print('Salvando Estado')
-        return self.reg
+        return deepcopy(self.reg)
     
     def altera_estado(self, e):
-        self.reg = e
+        self.reg = deepcopy(e)
     
     def estado_altera_acumulador(self, e, novo_valor):
         e._acc = novo_valor
@@ -48,11 +49,9 @@ class Cpu:
     def executa(self, dados, mmu, so, processo, timer):
 
         instrucao = self._pm[self.reg._pc]['instr']
-        #print(instrucao, self._pm[self.reg._pc]['arg'])
         #Caso CARGI 
         if instrucao == 'CARGI':
             self.reg._acc = self._pm[self.reg._pc]['arg']    
-            print('AC = ', self.reg._acc)
             self.reg._pc += 1
 
         #Caso CARGM
@@ -61,7 +60,6 @@ class Cpu:
             if dados.mem_size > argument and argument >= 0:
                 if self.reg.status != 'PAGINAINVALIDA' and self.reg.status != 'ACESSOINVALIDO':
                     self.reg._acc = mmu.mmuGetData(argument, so, processo, self, timer, dados)
-                    print('AC = ', self.reg._acc)
                     self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'
@@ -74,7 +72,6 @@ class Cpu:
                 value = mmu.mmuGetData(position, so, processo, self, timer, dados)
                 if self.reg.status != 'PAGINAINVALIDA' and self.reg.status != 'ACESSOINVALIDO':
                     self.reg._acc = value
-                    print('AC = ', self.reg._acc)
                     self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'
@@ -84,7 +81,7 @@ class Cpu:
             argument = self._pm[self.reg._pc]['arg']
             if dados.mem_size > argument and argument >= 0:
                 mmu.mmuSetData(argument, dados, self.reg._acc, so, timer, processo, self)
-                print('D[', argument,'] = ', self.reg._acc)
+                print('AQUI')
                 self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'
@@ -96,7 +93,6 @@ class Cpu:
             if value < dados.mem_size and value >= 0:
                 if self.reg.status != 'PAGINAINVALIDA' and self.reg.status != 'ACESSOINVALIDO':
                     mmu.mmuSetData(value, dados, self.reg._acc, so, timer, processo, self)
-                    print('D[',value,'] = ', self.reg._acc)
                     self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'
@@ -107,7 +103,6 @@ class Cpu:
             if dados.mem_size > argument and argument >= 0:
                 if self.reg.status != 'PAGINAINVALIDA' and self.reg.status != 'ACESSOINVALIDO':
                     self.reg._acc += mmu.mmuGetData(argument, so, processo, self, timer, dados)
-                    print('AC = ', self.reg._acc)
                     self.reg._pc += 1
             else:
                 self.reg.status = 'VIOLACAODEMEMORIA'

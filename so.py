@@ -2,11 +2,12 @@ from job import *
 from cpu import Cpu_estado
 from mmu import Mmu
 from dados import Dados
+from copy import *
 
 class Processo:
 
     #cria o processo
-    def __init__(self, txt, timer, dados, mmu, j):
+    def __init__(self, txt, timer, dados, j):
         #cria o job
         self.job = Job(txt)
         
@@ -25,28 +26,31 @@ class Processo:
 
 
         #copia da mmu
-        self.copia_mmu = mmu
+        self.copia_mmu = Mmu(int(dados.mem_size/dados.page_size), dados.page_size)
         
         #memoria secundaria /copia da memoria principal
-        self.mem_secundaria = dados
+        self.mem_secundaria = Dados(dados.mem_size, dados.page_size)
         self.index_saida = 1
         self.cpu_time = 0
         self.fim = 0
-        self.tempo_bloqueado = 0
+        self.tempo_em_es = 0
+        self.tempo_em_troca_pagina = 0
         self.vezes_bloqueado = 0
         self.prioridade = 0.5
         self.preempcao = 0
+        self.falha_pagina = 0
+        self.vezes_escalonado = 0
 
 
 class So:
 
     #sistema operacional cria tabela
-    def __init__(self, timer, argv, dados, mmu):
+    def __init__(self, timer, argv, dados):
         self.tabela_processos = []
         j = 0
         del argv[0]
         for i in argv:
-            self.tabela_processos.append(Processo(i, timer, dados, mmu, j))     
+            self.tabela_processos.append(Processo(i, timer, dados, j))     
             j += 1
 
     #inicia o s.o
@@ -55,28 +59,31 @@ class So:
     
     #coloca a copia da mmu no processo na mmu
     def altera_mmu(self, processo, mmu):
-        for i, pagina in enumerate(mmu.tabela_pagina):
-            pagina = self.tabela_processos[processo].copia_mmu.tabela_pagina[i]
+        mmu.tabela_pagina = deepcopy(self.tabela_processos[processo].copia_mmu.tabela_pagina)
     
     #pega uma pagina da memoria //passar memoria secundaria por parametro
     def get_pagina(self, i, c, timer, processo):
         c.dorme()
-        timer.timer_int_de(8, self.tabela_processos[processo].nome)
         return self.tabela_processos[processo].mem_secundaria.getPage(i)
 
     #coloca uma pagina na memoria
     #pagina = pagina a ser colocada na memoria principal
-    def set_pagina(self, data, pagina, index, mmu, descritor, c, timer):
+    def set_pagina(self, data, pagina, index, mmu, descritor, c, timer, fifo):
 
+        self.tabela_processos[index].falha_pagina += 1
+        
         #verifica se tem uma pagina livre
         paginas_ocupadas = [False for i in range(mmu.tam_tabela)]
         for processo in self.tabela_processos:
             for page in processo.copia_mmu.tabela_pagina:
                 if page.n_pagina != None:
+                    print(page.n_pagina)
                     paginas_ocupadas[page.n_pagina] = True
+        
         
         for i, value in enumerate(paginas_ocupadas):
             #encontrou pagina livre
+            print('Value = ', value, 'Pagina = ', i)
             if value == False:
                 #pagina ja existe na memoria secundaria
                 if pagina != None:
@@ -86,6 +93,7 @@ class So:
                     mmu.tabela_pagina[descritor].n_pagina = int(i)
                     c.dorme()
                     timer.timer_int_de(10, self.tabela_processos[index].nome)
+                    self.tabela_processos[index].tempo_em_troca_pagina += 10
                     return
                 #pagina nao existe na memoria secundaria
                 else:
@@ -94,35 +102,82 @@ class So:
                     mmu.tabela_pagina[descritor].n_pagina = int(i)
                     c.dorme()
                     timer.timer_int_de(10, self.tabela_processos[index].nome)
+                    self.tabela_processos[index].tempo_em_troca_pagina += 10
                     return
         
+        
         #caso nao encontrar pagina livre substitui de acordo com o algoritmo de substituicao
-        for processo in self.tabela_processos:
-            for page in processo.tabela_pagina:
-                if page.n_pagina == data.next_page_out:
-                    #pagina ja existe na memoria secundaria
-                    if pagina != None:
-                        data.data[(data.next_page_out * data.page_size):((data.next_page_out * data.page_size) + data.page_size)] = pagina
-                        pagina.alterado == 'ALTERADO'
-                        mmu.tabela_pagina[descritor].validade = 'VALIDO'
-                        mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
-                        mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
-                        data.next_page_out += 1
-                        c.dorme()
-                        timer.timer_int_de(10, self.tabela_processos[index].nome)
-                        return
-                    #pagina nao existe na memoria secundaria
-                    else:
-                        pagina.alterado = 'ALTERADO'
-                        mmu.tabela_pagina[descritor].validade = 'VALIDO'
-                        mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
-                        mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
-                        data.next_page_out += 1
-                        c.dorme()
-                        timer.timer_int_de(10, self.tabela_processos[index].nome)
-                        if data.next_page_out >= (data.mem_size / data.page_size):
-                            data.next_page_out = 0
-                        return
+        if fifo == True:
+            for processo in self.tabela_processos:
+                for page in processo.copia_mmu.tabela_pagina:
+                    if page.n_pagina == data.next_page_out:
+                        #pagina ja existe na memoria secundaria
+                        if pagina != None:
+                            data.data[(data.next_page_out * data.page_size):((data.next_page_out * data.page_size) + data.page_size)] = deepcopy(pagina)
+                            page.alterado == 'ALTERADO'
+                            mmu.tabela_pagina[descritor].validade = 'VALIDO'
+                            mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
+                            mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
+                            data.next_page_out += 1
+                            if data.next_page_out >= mmu.tam_tabela:
+                                data.next_page_out = 0
+                            c.dorme()
+                            timer.timer_int_de(10, self.tabela_processos[index].nome)
+                            self.tabela_processos[index].tempo_em_troca_pagina += 10
+                            return
+                        #pagina nao existe na memoria secundaria
+                        else:
+                            page.alterado = 'ALTERADO'
+                            mmu.tabela_pagina[descritor].validade = 'VALIDO'
+                            mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
+                            mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
+                            data.next_page_out += 1
+                            c.dorme()
+                            timer.timer_int_de(10, self.tabela_processos[index].nome)
+                            self.tabela_processos[index].tempo_em_troca_pagina += 10
+                            if data.next_page_out >= mmu.tam_tabela:
+                                data.next_page_out = 0
+                            return
+        
+        else:
+            for processo in self.tabela_processos:
+                for page in processo.copia_mmu.tabela_pagina:
+                    if page.n_pagina == data.next_page_out:
+                        if page.acessado == 'ACESSADO':
+                            page.acessado = 'NAOACESSADO'
+                            data.next_page_out += 1
+                            if data.next_page_out >= mmu.tam_tabela:
+                                data.next_page_out = 0
+                        else:    
+                            #pagina ja existe na memoria secundaria
+                            print('TO NO ELSE')
+                            if pagina != None:
+                                data.data[(data.next_page_out * data.page_size):((data.next_page_out * data.page_size) + data.page_size)] = deepcopy(pagina)
+                                page.alterado == 'ALTERADO'
+                                mmu.tabela_pagina[descritor].validade = 'VALIDO'
+                                mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
+                                mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
+                                data.next_page_out += 1
+                                if data.next_page_out >= mmu.tam_tabela:
+                                    data.next_page_out = 0
+                                c.dorme()
+                                timer.timer_int_de(10, self.tabela_processos[index].nome)
+                                self.tabela_processos[index].tempo_em_troca_pagina += 10
+                                return
+                            #pagina nao existe na memoria secundaria
+                            else:
+                                page.alterado = 'ALTERADO'
+                                mmu.tabela_pagina[descritor].validade = 'VALIDO'
+                                mmu.tabela_pagina[descritor].alterado = 'NAOALTERADO'
+                                mmu.tabela_pagina[descritor].n_pagina = int(data.next_page_out)
+                                data.next_page_out += 1
+                                c.dorme()
+                                timer.timer_int_de(10, self.tabela_processos[index].nome)
+                                self.tabela_processos[index].tempo_em_troca_pagina += 10
+                                if data.next_page_out >= mmu.tam_tabela:
+                                    data.next_page_out = 0
+                                return
+
     
     def executa(self, c, timer, processo, tam_quantum):
 
@@ -144,6 +199,7 @@ class So:
                 c.altera_estado(self.tabela_processos[processo].cpu_estado)
                 #Configura o timer de acordo com o tempo de acesso ao dispositivo de entrada correspondente
                 timer.timer_int_de(self.tabela_processos[processo].job.entrada[c._pm[c.reg._pc]['arg']][0], self.tabela_processos[processo].nome)
+                self.tabela_processos[processo].tempo_em_es += self.tabela_processos[processo].job.entrada[c._pm[c.reg._pc]['arg']][0]
                 c.dorme()
                 c.reg._pc += 1
             
@@ -156,6 +212,7 @@ class So:
                 self.tabela_processos[processo].index_saida += 1
                 c.altera_estado(self.tabela_processos[processo].cpu_estado)
                 timer.timer_int_de(self.tabela_processos[processo].job.saida[c._pm[c.reg._pc]['arg']][0], self.tabela_processos[processo].nome)
+                self.tabela_processos[processo].tempo_em_es += self.tabela_processos[processo].job.saida[c._pm[c.reg._pc]['arg']][0]
                 c.dorme()
                 c.reg._pc += 1
             else:
