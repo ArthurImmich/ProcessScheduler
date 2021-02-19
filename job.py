@@ -23,7 +23,7 @@ class Job:
                 tam_saida = int(f.readline())
                 self.saida.append([int(f.readline())])
                 for j in range(tam_saida):
-                    self.saida[i].append(None)
+                    self.saida[i].append(0)
             
             #preenche memoria de dados
             for line in f:

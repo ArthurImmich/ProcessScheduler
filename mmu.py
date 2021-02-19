@@ -7,13 +7,15 @@ class Pagina:
 
 class Mmu:
 
-
     def __init__(self, tam_tabela, tam_pagina):
         self.tabela_pagina = []
         self.tam_tabela = tam_tabela
         self.tam_pagina = tam_pagina
-        for i in range(tam_tabela):
+        for i in range(self.tam_tabela):
             self.tabela_pagina.append(Pagina())
+        
+    def fifo(self):
+        return True
     
     def mmuGetData(self, i, so, processo, c, timer, dados):
 
@@ -30,7 +32,7 @@ class Mmu:
         #Pagina nao esta na memoria principal
         if self.tabela_pagina[descritor].alterado == 'ALTERADO':
             pagina = so.get_pagina(self.tabela_pagina[descritor].n_pagina, c, timer, processo)
-            so.set_pagina(dados, pagina, processo, self, descritor, c, timer)
+            so.set_pagina(dados, pagina, processo, self, descritor, c, timer, self.fifo())
         value = dados.getData((self.tabela_pagina[descritor].n_pagina * self.tam_pagina) + posicao)
         #Se o valor nao existir
         if value == None:
@@ -55,13 +57,10 @@ class Mmu:
             #Pagina nao esta na memoria principal
             else:
                 pagina = so.get_pagina(self.tabela_pagina[descritor].n_pagina, c, timer, processo)
-                so.set_pagina(dados, pagina, processo, self, descritor, c, timer)
+                so.set_pagina(dados, pagina, processo, self, descritor, c, timer, self.fifo())
                 self.tabela_pagina[descritor].alterado = 'NAOALTERADO' 
                 dados.setData(((self.tabela_pagina[descritor].n_pagina * self.tam_pagina) + posicao), value)
         #Pagina invalida
         else:
-            so.set_pagina(dados, None, processo, self, descritor, c, timer)
+            so.set_pagina(dados, None, processo, self, descritor, c, timer, self.fifo())
             dados.setData(((self.tabela_pagina[descritor].n_pagina * self.tam_pagina) + posicao), value)
-
-
-
